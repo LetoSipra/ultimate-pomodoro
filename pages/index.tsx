@@ -8,11 +8,11 @@ import { DocumentContext } from "next/document";
 import Head from "next/head";
 
 interface Props {
-  listdata: ToDoList[]
+  listdata: ToDoList[];
+  completedToDos: ToDoList[];
 }
 
-export default function Home({ listdata }: Props) {
-  
+export default function Home({ listdata, completedToDos }: Props) {
   return (
     <>
       <Head>
@@ -21,13 +21,13 @@ export default function Home({ listdata }: Props) {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
       <header>
-        <Header />
+        {/* <Header /> */}
       </header>
       <main className="bg-black">
-        <section>
+        <section className="md:flex">
           <PomodoroClock />
           {/* second component */}
-          <ToDoList listdata={listdata} />
+          {/* <ToDoList listdata={listdata} completedToDos={completedToDos} /> */}
         </section>
         <section>{/* page 2 */}</section>
       </main>
@@ -38,15 +38,24 @@ export default function Home({ listdata }: Props) {
 export async function getServerSideProps(context: DocumentContext) {
   const providers = await getProviders();
   const session = await getSession(context);
-  const ToDoListData = await getDoc(doc(db, "UserData", `${session?.user.uid}`))
+  const ToDoListData = await getDoc(
+    doc(db, `${session?.user.uid}`, "Default")
+  )
     .then((res) => res.data()?.ToDoList)
+    .catch((err) => err.message);
+
+  const completedToDos = await getDoc(
+    doc(db, `${session?.user.uid}`, "Default")
+  )
+    .then((res) => res.data()?.CompletedToDos)
     .catch((err) => err.message);
 
   return {
     props: {
       providers,
       session,
-      listdata: ToDoListData,
+      listdata: ToDoListData || null,
+      completedToDos: completedToDos || null,
     },
   };
 }

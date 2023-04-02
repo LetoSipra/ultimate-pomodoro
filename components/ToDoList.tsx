@@ -1,11 +1,5 @@
 import { db } from "@/firebase";
-import {
-  addDoc,
-  collection,
-  doc,
-  serverTimestamp,
-  setDoc,
-} from "firebase/firestore";
+import { doc, setDoc } from "firebase/firestore";
 import { useSession } from "next-auth/react";
 import { MutableRefObject, useEffect, useRef, useState } from "react";
 import {
@@ -14,15 +8,20 @@ import {
   HiOutlineTrash,
   HiPencilSquare,
   HiCheck,
+  HiChevronRight,
+  HiPlus,
 } from "react-icons/hi2";
+import { Disclosure } from "@headlessui/react";
+import { useAutoAnimate } from "@formkit/auto-animate/react";
 
 interface Props {
   listdata: ToDoList[];
+  completedToDos: ToDoList[];
 }
 
-function ToDoList({ listdata }: Props) {
+function ToDoList({ listdata, completedToDos }: Props) {
   const [input, setInput] = useState<string>("");
-  const [array, setArray] = useState<any>(listdata);
+  const [array, setArray] = useState<ToDoList[]>(listdata || []);
   const [loading, setLoading] = useState(true);
   const { data: session } = useSession();
   const scrollRef = useRef() as MutableRefObject<HTMLLIElement>;
@@ -30,38 +29,10 @@ function ToDoList({ listdata }: Props) {
   const inputRef = useRef() as MutableRefObject<HTMLInputElement>;
   const [editInput, setEditInput] = useState<string>("");
   const [edit, setEdit] = useState<boolean>(false);
-
-  const addTaskToDB = async () => {
-    if (!session) return;
-    setLoading(true);
-    const newKey = array.length + 1;
-    await addDoc(
-      collection(db, "UserData", `${session.user.uid}`, "ToDoTasks"),
-      {
-        text: input,
-        timestamp: serverTimestamp(),
-        key: newKey,
-      }
-    );
-    setLoading(false);
-  };
-
-  //   useEffect(() => {
-  //     if (!session) return;
-  //     onSnapshot(
-  //       query(
-  //         collection(db, "UserData", `${session.user.uid}`, "ToDoTasks"),
-  //         orderBy("key", "asc")
-  //         //limit(100)
-  //       ),
-  //       (snapshot: any) => {
-  //         setArray(snapshot.docs);
-  //       }
-  //     );
-  // await setDoc(doc(db, `${session.user.uid}`, `${newdoc.id}`), {
-  //   text: input,
-  // });
-  //   }, [db]);
+  const [completedItems, setCompletedItems] = useState<ToDoList[]>(
+    completedToDos || []
+  );
+  const [animationParent] = useAutoAnimate();
 
   const onMoveUp = (key: number) => {
     if (key === 0) return;
@@ -84,22 +55,25 @@ function ToDoList({ listdata }: Props) {
   };
 
   const deleteItem = (id: string) => {
-    const newArray: ToDoList[] = array.filter(
-      (filter: ToDoList) => filter.id !== id
-    );
+    const newArray = array.filter((filter) => filter.id !== id);
     setArray(newArray);
   };
 
+  const deleteItemFromCompleted = (id: string) => {
+    const newArray = completedItems.filter((filter) => filter.id !== id);
+    setCompletedItems(newArray);
+  };
+
   const addItem = () => {
+    inputRef.current.focus();
     if (input.length < 1) return;
-    const newValue: ToDoList = {
+    const newValue = {
       id: new Date().getTime().toString(),
       text: input,
       edit: false,
     };
     setArray([...array, newValue]);
     setInput("");
-    inputRef.current.focus();
   };
 
   const editItem = (key: number) => {
@@ -122,7 +96,18 @@ function ToDoList({ listdata }: Props) {
     if (e.key === "Enter") {
       edit ? doneButtonRef.current.click() : addItem();
     }
-    inputRef.current.focus();
+  };
+
+  const removeToCompleted = (id: string) => {
+    const completedItem = array.filter((filter) => filter.id === id)[0];
+    setCompletedItems([...completedItems, completedItem]);
+  };
+
+  const removeToList = (id: string) => {
+    const completedItem = completedItems.filter(
+      (filter) => filter.id === id
+    )[0];
+    setArray([...array, completedItem]);
   };
 
   useEffect(() => {
@@ -130,8 +115,9 @@ function ToDoList({ listdata }: Props) {
       if (loading) return;
       if (!session) return;
       setLoading(true);
-      await setDoc(doc(db, "UserData", `${session.user.uid}`), {
+      await setDoc(doc(db, `${session.user.uid}`, "Default"), {
         ToDoList: array,
+        CompletedToDos: completedItems,
       });
       console.log("shit");
 
@@ -139,7 +125,7 @@ function ToDoList({ listdata }: Props) {
     };
     syncData();
     scrollRef.current.scrollIntoView({ behavior: "smooth" });
-  }, [array]);
+  }, [array, completedItems]);
 
   useEffect(() => {
     scrollRef.current.scrollIntoView({ behavior: "smooth" });
@@ -156,15 +142,23 @@ function ToDoList({ listdata }: Props) {
   return (
     <>
       {/* Body */}
-      <div className="h-[calc(100vh_-_282px)] max-h-[[calc(100vh_-_272px)]] overflow-y-scroll scrollbar-hide">
-        <ul className="">
-          <h1>{loading ? "ye" : "no"}</h1>
-          {array.map((value: ToDoList, key: number) => (
-            <li className="" key={value.id}>
-              <div className="mx-10 flex border-b">
-                <div className="h-5 w-5 rounded-full border-2"></div>
+      <div className="mx-10 my-2 rounded-xl border-2 border-solid border-white/10 bg-white/5 px-3 py-1 shadow-sm shadow-white outline outline-white/10">
+        <div className="h-[calc(100vh_-_282px)] overflow-y-scroll scrollbar-hide md:w-[50vw]">
+          <ul className="" ref={animationParent}>
+            {array?.map((value, key) => (
+              <li
+                className="group/icons relative my-2 flex rounded-md border-b border-white/25 bg-white/10 p-2 transition duration-200 hover:bg-white/20"
+                key={value.id}>
+                <button
+                  className="group/tick h-6 w-6 flex-none rounded-full border-2 border-solid"
+                  onClick={() => {
+                    removeToCompleted(value.id);
+                    deleteItem(value.id);
+                  }}>
+                  <HiCheck className="m-auto hidden h-5 w-5 group-hover/tick:flex" />
+                </button>
                 {!value.edit ? (
-                  <p className="w-full overflow-auto break-words">
+                  <p className="mx-2 w-full overflow-auto break-words">
                     {value.text}
                   </p>
                 ) : (
@@ -176,55 +170,100 @@ function ToDoList({ listdata }: Props) {
                       setEditInput(e.target.value);
                     }}
                     autoFocus
-                    className="w-full overflow-auto break-words bg-black outline-none"
+                    className="mx-2 w-full bg-white/10 outline-none"
                     id={value.id}
                   />
                 )}
                 {/* icons */}
-                <div className="flex">
+                <div
+                  className="right-3 hidden space-x-1 rounded-md bg-black/80 outline outline-black/80
+                group-hover/icons:absolute group-hover/icons:flex">
                   {value.edit ? (
                     <button ref={doneButtonRef} onClick={() => finishEdit(key)}>
-                      <HiCheck className="h-5 w-6 cursor-pointer" />
+                      <HiCheck className="h-6 w-6 cursor-pointer rounded-md text-orange-400 transition duration-300 hover:bg-white/25" />
                     </button>
                   ) : (
                     <HiPencilSquare
-                      className="h-5 w-6 cursor-pointer"
+                      className="h-6 w-6 cursor-pointer rounded-md text-orange-400 transition duration-300 hover:bg-white/25"
                       onClick={() => editItem(key)}
                     />
                   )}
                   <HiChevronUp
-                    className="h-5 w-6 cursor-pointer"
+                    className="h-6 w-6 cursor-pointer rounded-md text-yellow-300 transition duration-300 hover:bg-white/25"
                     onClick={() => onMoveUp(key)}
                   />
                   <HiChevronDown
-                    className="h-5 w-6 cursor-pointer"
+                    className="h-6 w-6 cursor-pointer rounded-md text-yellow-300 transition duration-300 hover:bg-white/25"
                     onClick={() => onMoveDown(key)}
                   />
                   <HiOutlineTrash
-                    className="h-5 w-6 text-[red]"
+                    className="h-6 w-6 cursor-pointer rounded-md text-[red] transition duration-300 hover:bg-white/25"
                     onClick={() => deleteItem(value.id)}
                   />
                 </div>
-              </div>
-            </li>
-          ))}
-          <li ref={scrollRef}></li>
-        </ul>
-      </div>
-      {/* input */}
-      <div className="mx-10 flex border">
-        <p className="cursor-pointer text-2xl" onClick={() => addItem()}>
-          +
-        </p>
-        <input
-          placeholder="Add a task"
-          ref={inputRef}
-          type="text"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          maxLength={250}
-          className="w-full bg-black outline-none placeholder:text-white"
-        />
+              </li>
+            ))}
+            <li ref={scrollRef}></li>
+            {/* CompletedItems Disclosure */}
+            <Disclosure>
+              {({ open }) => (
+                <>
+                  <Disclosure.Button className="group/icons relative my-2 flex space-x-2.5 rounded-md border-b border-white/25 bg-white/10 p-2 transition duration-200 hover:bg-white/20">
+                    {open ? (
+                      <HiChevronDown className="my-auto h-5 w-5" />
+                    ) : (
+                      <HiChevronRight className="my-auto h-5 w-5" />
+                    )}
+                    <p>Completed</p>
+                    <p>{completedItems && completedItems.length}</p>
+                  </Disclosure.Button>
+                  <Disclosure.Panel className="text-gray-400 line-through">
+                    {completedItems?.map((value) => (
+                      <li className="group/icons relative my-2 flex rounded-md border-b border-white/25 bg-white/10 p-2 transition duration-200 hover:bg-white/20">
+                        <button
+                          className="h-6 w-6 flex-none rounded-full border-2 border-solid"
+                          onClick={() => {
+                            removeToList(value.id);
+                            deleteItemFromCompleted(value.id);
+                          }}>
+                          <HiCheck className="m-auto h-5 w-5 text-white" />
+                        </button>
+                        <p className="mx-2 w-full overflow-auto break-words">
+                          {value.text}
+                        </p>
+                        {/* icons */}
+                        <div
+                          className="right-3 hidden space-x-1 rounded-md bg-black/30 outline outline-black/30
+                group-hover/icons:absolute group-hover/icons:flex">
+                          <HiOutlineTrash
+                            className="h-6 w-6 cursor-pointer rounded-md  text-[red] transition duration-300 hover:bg-white/25"
+                            onClick={() => deleteItemFromCompleted(value.id)}
+                          />
+                        </div>
+                      </li>
+                    ))}
+                  </Disclosure.Panel>
+                </>
+              )}
+            </Disclosure>
+          </ul>
+        </div>
+        {/* input */}
+        <div className="relative my-2 flex space-x-1 rounded-md border-white/25 bg-white/10 p-2 transition duration-200 hover:bg-white/20">
+          <HiPlus
+            className="h-6 w-6 cursor-pointer rounded-md text-2xl text-[#00FFFF] transition duration-300 hover:bg-white/25"
+            onClick={() => addItem()}
+          />
+          <input
+            placeholder="Add a task"
+            ref={inputRef}
+            type="text"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            maxLength={250}
+            className="w-full bg-transparent outline-none placeholder:pl-1 placeholder:text-white"
+          />
+        </div>
       </div>
     </>
   );

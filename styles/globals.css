@@ -4,12 +4,9 @@
 
 @layer base {
   body {
-    @apply bg-black text-white;
+    @apply bg-black text-white/95 text-shadow-xl;
   }
 }
 
 @layer components {
-  .headBtn {
-    @apply hover:bg-white;
-  }
 }

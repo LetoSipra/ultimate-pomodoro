@@ -107,7 +107,7 @@ function PomodoroClock() {
 
   return (
     <>
-      <div>
+      <div className="md:w-[50vw]">
         {/* mode buttons */}
         <div className="flex justify-between font-serif font-semibold">
           <button
