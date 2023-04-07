@@ -142,8 +142,8 @@ function ToDoList({ listdata, completedToDos }: Props) {
   return (
     <>
       {/* Body */}
-      <div className="mx-10 my-2 rounded-xl border-2 border-solid border-white/10 bg-white/5 px-3 py-1 shadow-sm shadow-white outline outline-white/10">
-        <div className="h-[calc(100vh_-_282px)] overflow-y-scroll scrollbar-hide md:w-[50vw]">
+      <div className="mx-2 my-2 h-[calc(47vh_-_12px)] rounded-xl border-2 border-solid border-white/10 bg-white/5 px-3 py-1 outline outline-white/10 lg:my-10 lg:h-[calc(94vh_-_80px)] lg:w-[50%]">
+        <div className="h-[calc(100%_-_56px)] overflow-y-scroll scrollbar-hide">
           <ul className="" ref={animationParent}>
             {array?.map((value, key) => (
               <li
@@ -209,7 +209,7 @@ function ToDoList({ listdata, completedToDos }: Props) {
               {({ open }) => (
                 <>
                   <Disclosure.Button className="group/icons relative my-2 flex space-x-2.5 rounded-md border-b border-white/25 bg-white/10 p-2 transition duration-200 hover:bg-white/20">
-                    {open ? (
+                    {completedItems.length > 0 && open ? (
                       <HiChevronDown className="my-auto h-5 w-5" />
                     ) : (
                       <HiChevronRight className="my-auto h-5 w-5" />

@@ -1,4 +1,9 @@
 import { useEffect, useState } from "react";
+import {
+  HiArrowPath,
+  HiArrowPathRoundedSquare,
+  HiOutlinePlay,
+} from "react-icons/hi2";
 
 function PomodoroClock() {
   const [minutes, setMinutes] = useState<number>(25);
@@ -107,11 +112,11 @@ function PomodoroClock() {
 
   return (
     <>
-      <div className="md:w-[50vw]">
+      <div className="mx-2 my-2 h-[calc(47vh_-_12px)] rounded-xl border-2 border-solid border-white/10 bg-white/5 py-1 outline outline-white/10 lg:my-10 lg:h-[calc(94vh_-_80px)] lg:w-[50%]">
         {/* mode buttons */}
-        <div className="flex justify-between font-serif font-semibold">
+        <div className="mx-1 my-5 flex justify-between font-semibold sm:mx-10">
           <button
-            className="headBtn"
+            className="rounded-lg border border-white/10 bg-white/20 px-1 py-2 text-xl font-bold text-white shadow-sm shadow-white/25 outline outline-white/10 transition duration-300 hover:bg-white/30"
             onClick={() => {
               reset("Session");
               setTicking(false);
@@ -119,7 +124,7 @@ function PomodoroClock() {
             Pomodoro
           </button>
           <button
-            className="headBtn"
+            className="rounded-lg border border-white/10 bg-white/20 px-1 py-2 text-xl font-bold text-white shadow-sm shadow-white/25 outline outline-white/10 transition duration-300 hover:bg-white/30"
             onClick={() => {
               reset("Short Break");
               setTicking(false);
@@ -127,7 +132,7 @@ function PomodoroClock() {
             Short Break
           </button>
           <button
-            className="headBtn"
+            className="rounded-lg border border-white/10 bg-white/20 px-1 py-2 text-xl font-bold text-white shadow-sm shadow-white/25 outline outline-white/10 transition duration-300 hover:bg-white/30"
             onClick={() => {
               reset("Long Break");
               setTicking(false);
@@ -137,29 +142,32 @@ function PomodoroClock() {
         </div>
         {/* display */}
         <div className="flex flex-col text-center">
-          <p className="text-5xl font-extrabold">{state}</p>
-          <p className="font-mono text-9xl font-extrabold">{display()}</p>
+          <p className="my-1 text-5xl font-bold">{state}</p>
+          <p className="font-mono text-[100px] sm:text-[125px] lg:text-[150px] xl:text-[200px] 2xl:text-[225px]">
+            {display()}
+          </p>
         </div>
         {/* control buttons */}
-        <div className="flex justify-center">
-          <button
-            className=""
+        <div className="my-3 flex justify-center space-x-5">
+          <HiOutlinePlay
+            className="h-10 w-10 cursor-pointer rounded-md transition duration-300 hover:bg-white/25 sm:h-12 sm:w-12"
             onClick={() => {
               setTicking(!ticking);
-            }}>
-            31
-          </button>
-          <button
-            className=""
+            }}
+          />
+          <HiArrowPath
+            className="h-10 w-10 cursor-pointer rounded-md transition duration-300 hover:bg-white/25 sm:h-12 sm:w-12"
             onClick={() => {
               reset(state);
               setTicking(false);
-            }}>
-            62
-          </button>
-          <button className="" onClick={() => setLoop(!loop)}>
-            Loop
-          </button>
+            }}
+          />
+          <HiArrowPathRoundedSquare
+            className={`h-10 w-10 cursor-pointer rounded-md shadow transition duration-300 hover:bg-white/25 sm:h-12 sm:w-12 ${
+              loop ? "shadow-[green]" : "shadow-[red]"
+            }`}
+            onClick={() => setLoop(!loop)}
+          />
         </div>
       </div>
     </>
