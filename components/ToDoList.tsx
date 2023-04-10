@@ -219,7 +219,9 @@ function ToDoList({ listdata, completedToDos }: Props) {
                   </Disclosure.Button>
                   <Disclosure.Panel className="text-gray-400 line-through">
                     {completedItems?.map((value) => (
-                      <li className="group/icons relative my-2 flex rounded-md border-b border-white/25 bg-white/10 p-2 transition duration-200 hover:bg-white/20">
+                      <li
+                        key={value.id}
+                        className="group/icons relative my-2 flex rounded-md border-b border-white/25 bg-white/10 p-2 transition duration-200 hover:bg-white/20">
                         <button
                           className="h-6 w-6 flex-none rounded-full border-2 border-solid"
                           onClick={() => {
