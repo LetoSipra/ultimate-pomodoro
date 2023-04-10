@@ -7,6 +7,7 @@ export const authOptions = {
     GoogleProvider({
       clientId: process.env.GOOGE_WEB_CLIENT_ID,
       clientSecret: process.env.GOOGE_WEB_CLIENT_SECRET,
+      secret: process.env.NEXTAUTH_SECRET,
     }),
     // ...add more providers here
   ],
@@ -16,6 +17,7 @@ export const authOptions = {
       session.user.uid = token.sub;
       return session;
     },
+    secret: process.env.NEXTAUTH_SECRET,
   },
 };
 
