@@ -4,7 +4,6 @@ import ToDoList from "@/components/ToDoList";
 import { db } from "@/firebase";
 import { doc, getDoc } from "firebase/firestore";
 import { getProviders, getSession } from "next-auth/react";
-import { DocumentContext } from "next/document";
 import Head from "next/head";
 
 interface Props {
@@ -35,12 +34,10 @@ export default function Home({ listdata, completedToDos }: Props) {
   );
 }
 
-export async function getServerSideProps(context: DocumentContext) {
+export async function getServerSideProps(context: any) {
   const providers = await getProviders();
   const session = await getSession(context);
-  const ToDoListData = await getDoc(
-    doc(db, `${session?.user.uid}`, "Default")
-  )
+  const ToDoListData = await getDoc(doc(db, `${session?.user.uid}`, "Default"))
     .then((res) => res.data()?.ToDoList)
     .catch((err) => err.message);
 
