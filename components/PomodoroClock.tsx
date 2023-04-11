@@ -105,7 +105,7 @@ function PomodoroClock() {
   //ticking the clock
   useEffect(() => {
     if (ticking) {
-      const setTime = setInterval(ticksec, 10);
+      const setTime = setInterval(ticksec, 1000);
       return () => clearInterval(setTime);
     }
   });
